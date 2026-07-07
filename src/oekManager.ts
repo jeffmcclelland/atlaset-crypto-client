@@ -1,15 +1,24 @@
 import _sodium from 'libsodium-wrappers-sumo'
 
+function copyBytes(bytes: Uint8Array): Uint8Array {
+  return new Uint8Array(bytes)
+}
+
+function zeroize(bytes: Uint8Array | null | undefined): void {
+  bytes?.fill(0)
+}
+
 export class OEKManager {
   private mek: Uint8Array | null = null
   private oekCache: Map<string, Uint8Array> = new Map()
 
   setMEK(mek: Uint8Array): void {
-    this.mek = mek
+    zeroize(this.mek)
+    this.mek = copyBytes(mek)
   }
 
   getMEK(): Uint8Array | null {
-    return this.mek
+    return this.mek ? copyBytes(this.mek) : null
   }
 
   async generateOEK(): Promise<Uint8Array> {
@@ -56,19 +65,26 @@ export class OEKManager {
   }
 
   cacheOEK(objectId: string, oek: Uint8Array): void {
-    this.oekCache.set(objectId, oek)
+    zeroize(this.oekCache.get(objectId))
+    this.oekCache.set(objectId, copyBytes(oek))
   }
 
   getCachedOEK(objectId: string): Uint8Array | null {
-    return this.oekCache.get(objectId) ?? null
+    const oek = this.oekCache.get(objectId)
+    return oek ? copyBytes(oek) : null
   }
 
   clearAll(): void {
+    zeroize(this.mek)
+    for (const oek of this.oekCache.values()) {
+      zeroize(oek)
+    }
     this.mek = null
     this.oekCache.clear()
   }
 
   clearOEK(objectId: string): void {
+    zeroize(this.oekCache.get(objectId))
     this.oekCache.delete(objectId)
   }
 }

@@ -2,6 +2,20 @@ export interface RecoveryShare {
     id: string;
     share: string;
 }
+export interface ReconstructMEKOptions {
+    /**
+     * Required for legacy raw-hex shares that do not carry threshold metadata.
+     */
+    threshold?: number;
+    /**
+     * Required for legacy raw-hex shares unless allowUnverifiedLegacyShares is true.
+     */
+    verificationTag?: string;
+    /**
+     * Compatibility escape hatch for pre-v1 raw-hex shares. New callers should not use this.
+     */
+    allowUnverifiedLegacyShares?: boolean;
+}
 /**
  * Split MEK into Shamir shares.
  * totalShares: total number of shares to generate.
@@ -10,7 +24,7 @@ export interface RecoveryShare {
 export declare function createRecoveryShares(mek: Uint8Array, totalShares: number, threshold: number): Promise<RecoveryShare[]>;
 /**
  * Reconstruct MEK from a set of Shamir shares.
- * Caller is responsible for ensuring at least `threshold` shares are provided.
+ * Versioned shares include threshold and verification metadata.
  */
-export declare function reconstructMEK(shares: RecoveryShare[]): Promise<Uint8Array>;
+export declare function reconstructMEK(shares: RecoveryShare[], options?: ReconstructMEKOptions): Promise<Uint8Array>;
 //# sourceMappingURL=shamir.d.ts.map
